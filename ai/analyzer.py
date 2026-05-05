@@ -1,201 +1,222 @@
-import google.generativeai as genai
 import os
 from dotenv import load_dotenv
+from google import genai
+from google.genai import types
 
 load_dotenv()
 
-# Configure Gemini API
-genai.configure(
-    api_key=os.getenv("AIzaSyCykF9zzpPZ8r_2cVBew_cox6BdjUHp9h0")
-)
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-# Use Gemini 1.5 Pro for best results
-model = genai.GenerativeModel(
-    model_name="gemini-1.5-pro",
-    generation_config={
-        "temperature": 0.3,
-        "top_p": 0.95,
-        "top_k": 40,
-        "max_output_tokens": 8192,
-    }
-)
+SYSTEM_PROMPT = """
+You are CodeLens AI — the world's most advanced code analyzer.
+You analyze code in ANY programming language with extreme precision.
+You understand logic errors, security vulnerabilities, performance issues,
+design patterns, memory leaks, edge cases, and best practices.
+Always provide detailed, accurate, and actionable analysis.
+"""
 
 def analyze_code(code, language):
     prompt = f"""
-You are an expert code analyzer AI.
-Analyze the following {language} code
-very carefully and provide a detailed
-analysis in EXACTLY this format:
+Perform a DEEP and COMPREHENSIVE analysis of this {language} code.
+
+Respond in EXACTLY this format with these EXACT headers:
 
 INTENTION:
-[What the programmer was trying to do,
-in 2-3 clear sentences]
+[2-3 sentences about what programmer was trying to accomplish]
 
 ACTUAL_BEHAVIOR:
-[What the code actually does,
-in 2-3 clear sentences]
+[2-3 sentences about what code actually does when executed]
+
+COMPLEXITY:
+[Time complexity: O(?) and Space complexity: O(?)]
 
 GAPS:
-[List each gap/bug found like this:
-- Line X: [issue] → [should be]
-- Line X: [issue] → [should be]]
+[List every gap found like:
+- Line X: [exact issue] → [fix needed]]
+
+SECURITY_ISSUES:
+[List security vulnerabilities or "None found"]
+
+PERFORMANCE_ISSUES:
+[List performance problems or "None found"]
 
 ALTERNATIVE_1:
-[First optimized implementation
-with proper code]
+[Title: Better approach name]
+[Complete optimized code]
 
 ALTERNATIVE_2:
-[Second optimized implementation
-with proper code]
+[Title: Most efficient approach]
+[Complete optimized code]
 
 ALTERNATIVE_3:
-[Third optimized implementation
-with proper code]
+[Title: Production ready approach]
+[Complete production code]
+
+CORRECTED_CODE:
+[Complete corrected version of original code]
 
 EXPLANATION:
-[Explain the entire code in simple
-English that a non programmer
-can understand, in 3-4 sentences]
+[4-5 sentences in simple English for non-programmers]
 
 SCORE:
-[A number between 0-100 based on:
-- Code correctness (40 points)
-- Code quality (30 points)
-- Best practices (30 points)]
+[Number 0-100]
+
+SCORE_BREAKDOWN:
+Correctness: X/40
+Security: X/20
+Performance: X/20
+Best Practices: X/20
 
 IMPROVEMENTS:
-[List 3-5 specific improvements
-the programmer should make]
+[List 5-7 improvements:
+- [improvement]: [why needed]]
 
 CODE:
 ```{language}
-[Write the complete corrected
-version of the code]
+[Complete fixed production ready version]
 ```
 
-Now analyze this code:
+Now analyze this {language} code:
 ```{language}
 {code}
 ```
 """
     try:
-        response = model.generate_content(prompt)
-        return parse_response(
-            response.text,
-            code
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+                temperature=0.2,
+                max_output_tokens=8192,
+            ),
+            contents=prompt
         )
+        return parse_response(response.text, language)
     except Exception as e:
-        return {
-            "intention": "Error analyzing code",
-            "actual_behavior": str(e),
-            "gaps": "Could not analyze",
-            "alternatives": [],
-            "explanation": "Error occurred",
-            "score": 0,
-            "improvements": [],
-            "corrected_code": code
-        }
+        return error_response(str(e))
 
-def parse_response(response, original):
+
+def parse_response(response, language):
     result = {
         "intention": "",
         "actual_behavior": "",
-        "gaps": "",
+        "complexity": "",
+        "gaps": [],
+        "security_issues": [],
+        "performance_issues": [],
         "alternatives": [],
+        "corrected_code": "",
         "explanation": "",
         "score": 0,
-        "improvements": "",
-        "corrected_code": ""
+        "score_breakdown": {},
+        "improvements": [],
+        "fixed_code": "",
+        "language": language
     }
-    
-    sections = {
-        "INTENTION:": "intention",
-        "ACTUAL_BEHAVIOR:": "actual_behavior",
-        "GAPS:": "gaps",
-        "EXPLANATION:": "explanation",
-        "IMPROVEMENTS:": "improvements",
-    }
-    
-    current = None
-    alt_count = 0
-    current_alt = ""
-    in_code_block = False
-    corrected_code = []
-    in_corrected = False
-    
+
+    current_section = None
+    current_alt = []
+    alt_title = ""
+    alternatives = []
+    fixed_code_lines = []
+    corrected_lines = []
+
     lines = response.split('\n')
-    
+
     for line in lines:
-        # Get score
-        if line.startswith("SCORE:"):
-            score_text = line.replace(
-                "SCORE:", ""
-            ).strip()
-            digits = ''.join(
-                filter(str.isdigit, score_text)
-            )
-            if digits:
-                result["score"] = min(
-                    int(digits), 100
-                )
-            current = None
-            continue
-            
-        # Get alternatives
-        if line.startswith("ALTERNATIVE_"):
+        if line.startswith("INTENTION:"):
+            current_section = "intention"; continue
+        elif line.startswith("ACTUAL_BEHAVIOR:"):
+            current_section = "actual_behavior"; continue
+        elif line.startswith("COMPLEXITY:"):
+            current_section = "complexity"; continue
+        elif line.startswith("GAPS:"):
+            current_section = "gaps"; continue
+        elif line.startswith("SECURITY_ISSUES:"):
+            current_section = "security"; continue
+        elif line.startswith("PERFORMANCE_ISSUES:"):
+            current_section = "performance"; continue
+        elif line.startswith("ALTERNATIVE_"):
             if current_alt:
-                result["alternatives"].append(
-                    current_alt.strip()
-                )
-            current_alt = ""
-            alt_count += 1
-            current = None
-            continue
-            
-        # Get corrected code
-        if line.startswith("CODE:"):
-            in_corrected = True
-            current = None
-            continue
-            
-        if in_corrected:
-            corrected_code.append(line)
-            continue
-            
-        # Check sections
-        found = False
-        for key, val in sections.items():
-            if line.startswith(key):
-                current = val
-                found = True
-                break
-                
-        if not found and current:
-            if current == "intention":
-                result["intention"] += line + " "
-            elif current == "actual_behavior":
-                result["actual_behavior"] += line + " "
-            elif current == "gaps":
-                result["gaps"] += line + "\n"
-            elif current == "explanation":
-                result["explanation"] += line + " "
-            elif current == "improvements":
-                result["improvements"] += line + "\n"
-        elif not found and alt_count > 0:
-            current_alt += line + "\n"
-    
+                alternatives.append({"title": alt_title, "code": '\n'.join(current_alt)})
+            current_alt = []
+            alt_title = line.split(":", 1)[-1].strip() if ":" in line else f"Alternative {len(alternatives)+1}"
+            current_section = "alternative"; continue
+        elif line.startswith("CORRECTED_CODE:"):
+            current_section = "corrected"; continue
+        elif line.startswith("EXPLANATION:"):
+            current_section = "explanation"; continue
+        elif line.startswith("SCORE_BREAKDOWN:"):
+            current_section = "score_breakdown"; continue
+        elif line.startswith("SCORE:"):
+            score_text = line.replace("SCORE:", "").strip()
+            digits = ''.join(filter(str.isdigit, score_text))
+            if digits:
+                result["score"] = min(int(digits[:3]), 100)
+            current_section = None; continue
+        elif line.startswith("IMPROVEMENTS:"):
+            current_section = "improvements"; continue
+        elif line.startswith("CODE:"):
+            current_section = "fixed_code"; continue
+
+        if current_section == "intention":
+            result["intention"] += line + " "
+        elif current_section == "actual_behavior":
+            result["actual_behavior"] += line + " "
+        elif current_section == "complexity":
+            result["complexity"] += line + " "
+        elif current_section == "gaps":
+            if line.strip().startswith("-"):
+                result["gaps"].append(line.strip())
+        elif current_section == "security":
+            if line.strip().startswith("-"):
+                result["security_issues"].append(line.strip())
+        elif current_section == "performance":
+            if line.strip().startswith("-"):
+                result["performance_issues"].append(line.strip())
+        elif current_section == "alternative":
+            current_alt.append(line)
+        elif current_section == "corrected":
+            corrected_lines.append(line)
+        elif current_section == "explanation":
+            result["explanation"] += line + " "
+        elif current_section == "score_breakdown":
+            if ":" in line:
+                parts = line.split(":", 1)
+                result["score_breakdown"][parts[0].strip()] = parts[1].strip()
+        elif current_section == "improvements":
+            if line.strip().startswith("-"):
+                result["improvements"].append(line.strip())
+        elif current_section == "fixed_code":
+            fixed_code_lines.append(line)
+
     if current_alt:
-        result["alternatives"].append(
-            current_alt.strip()
-        )
-    
-    result["corrected_code"] = '\n'.join(
-        corrected_code
-    ).strip()
-    
-    # Clean up
-    for key in ["intention", "actual_behavior", 
-                "explanation"]:
-        result[key] = result[key].strip()
-    
+        alternatives.append({"title": alt_title, "code": '\n'.join(current_alt)})
+
+    result["alternatives"] = alternatives
+    result["corrected_code"] = '\n'.join(corrected_lines).strip()
+    result["fixed_code"] = '\n'.join(fixed_code_lines).strip()
+
+    for field in ["intention", "actual_behavior", "complexity", "explanation"]:
+        result[field] = result[field].strip()
+
     return result
+
+
+def error_response(error):
+    return {
+        "intention": "Error analyzing code",
+        "actual_behavior": str(error),
+        "complexity": "N/A",
+        "gaps": ["Could not analyze code. Check your API key."],
+        "security_issues": [],
+        "performance_issues": [],
+        "alternatives": [],
+        "corrected_code": "",
+        "explanation": "An error occurred during analysis.",
+        "score": 0,
+        "score_breakdown": {},
+        "improvements": [],
+        "fixed_code": "",
+        "language": "unknown"
+    }
