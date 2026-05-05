@@ -1,35 +1,38 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import sys, os
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ai.analyzer import analyze_code
-from database.db import save_analysis, get_history
+from database.db import *
 
-app = FastAPI(title="CodeLens AI", description="AI Code Analyzer API")
+app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+class Auth(BaseModel):
+    username: str
+    password: str
 
 class CodeInput(BaseModel):
+    username: str
     code: str
-    language: str
 
-@app.get("/")
-def home():
-    return {"message": "CodeLens AI Running!", "status": "active"}
+@app.post("/register")
+def register(data: Auth):
+    if find_user(data.username):
+        return {"msg": "User exists"}
+    create_user(data.username, data.password)
+    return {"msg": "Registered"}
+
+@app.post("/login")
+def login(data: Auth):
+    user = find_user(data.username)
+    if user and user["password"] == data.password:
+        return {"msg": "Success"}
+    return {"msg": "Invalid"}
 
 @app.post("/analyze")
-def analyze(input: CodeInput):
-    result = analyze_code(input.code, input.language)
-    save_analysis(input.code, input.language, result)
+def analyze(data: CodeInput):
+    result = analyze_code(data.code)
+    save_result(data.username, data.code, result)
     return result
 
-@app.get("/history")
-def history():
-    return get_history()
+@app.get("/history/{username}")
+def history(username):
+    return get_history(username)

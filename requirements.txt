@@ -1,8 +1,7 @@
-streamlit
 fastapi
 uvicorn
+streamlit
 pymongo
-google-genai
-python-dotenv
 requests
-pygments
+python-dotenv
+google-genai
