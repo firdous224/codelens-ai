@@ -1,11 +1,11 @@
 from google import genai
 import os
 import json
-from dotenv import load_dotenv
 
-load_dotenv()
+# 🔥 Put your Gemini API key directly here
+GEMINI_API_KEY = "AIzaSyDIb-vJL4VWRtZYL5jWJZ0KiCsAaVwhIg8"
 
-client = genai.Client(api_key=os.getenv("AIzaSyCykF9zzpPZ8r_2cVBew_cox6BdjUHp9h0"))
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 def analyze_code(code):
     prompt = f"""

@@ -1,19 +1,16 @@
 from pymongo import MongoClient
-import os
-from dotenv import load_dotenv
 
-load_dotenv(dotenv_path=".env")
+# 🔥 Direct MongoDB URL (no .env issues)
+MONGO_URI = "mongodb+srv://codelens:codelens224@cluster0.dqzudxu.mongodb.net/codelens"
 
-mongo_uri = os.getenv("mongodb+srv://codelens:codelens224@cluster0.dqzudxu.mongodb.net/codelens")
-print("MONGO URI:", mongo_uri)
+client = MongoClient(MONGO_URI)
 
-client = MongoClient(mongo_uri)
-
+# Test connection
 try:
     client.admin.command('ping')
-    print("✅ MongoDB Connected")
+    print("✅ MongoDB Connected Successfully")
 except Exception as e:
-    print("❌ Mongo Error:", e)
+    print("❌ MongoDB Error:", e)
 
 db = client["codelens"]
 
@@ -21,7 +18,10 @@ users = db["users"]
 analysis = db["analysis"]
 
 def create_user(username, password):
-    users.insert_one({"username": username, "password": password})
+    users.insert_one({
+        "username": username,
+        "password": password
+    })
 
 def find_user(username):
     return users.find_one({"username": username})
