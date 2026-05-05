@@ -3,7 +3,7 @@ import os
 import json
 
 # 🔥 Put your Gemini API key directly here
-GEMINI_API_KEY = "AIzaSyDIb-vJL4VWRtZYL5jWJZ0KiCsAaVwhIg8"
+GEMINI_API_KEY = "AIzaSyAFZF7D7fHa1a0i9FMvKgJXnTOfK0FxB08"
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 

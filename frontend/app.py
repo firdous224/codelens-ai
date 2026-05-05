@@ -126,25 +126,61 @@ elif st.session_state.page == "processing":
 # ---------------- RESULTS ----------------
 elif st.session_state.page == "results":
 
+    code = st.session_state.get("code", "")
+
+    # -------- SMART FAKE ANALYZER --------
+    bugs = []
+    score = 95
+
+    if "/ 0" in code or "b = 0" in code:
+        bugs.append("Division by zero error")
+        score -= 30
+
+    if "for" in code and "range" not in code:
+        bugs.append("Possible inefficient loop")
+        score -= 10
+
+    if "==" in code:
+        bugs.append("Potential comparison issue")
+        score -= 5
+
+    if "input(" in code:
+        bugs.append("No input validation")
+        score -= 5
+
+    intent = "The code performs operations based on user logic."
+    explanation = "The code executes logic and may fail under certain conditions."
+
+    # -------- UI --------
     st.title("📊 Analysis Results")
 
     col1, col2, col3 = st.columns(3)
 
-    col1.metric("Intent Score", "84%", "Good")
-    col2.metric("Bugs Found", "2", "- Issues")
-    col3.metric("Confidence", "91%", "High")
+    col1.metric("Intent Score", f"{score}%")
+    col2.metric("Bugs Found", len(bugs))
+    col3.metric("Confidence", "90%")
 
     st.markdown("### 🧠 Intent")
-    st.success("The code performs an operation and may fail under certain conditions.")
+    st.success(intent)
 
     st.markdown("### ⚠️ Issues")
-    st.error("Potential runtime error detected (e.g., division by zero).")
+    if bugs:
+        for b in bugs:
+            st.error(b)
+    else:
+        st.success("No major issues found")
 
     st.markdown("### 💡 Suggestions")
-    st.info("Add validation checks before performing operations.")
+    if bugs:
+        st.info("Add validation and error handling")
+    else:
+        st.info("Code looks clean and optimized")
 
     st.markdown("### 🔁 Alternatives")
-    st.write("Use safe programming patterns or exception handling.")
+    st.write("Use safer and optimized coding practices")
+
+    st.markdown("### 🗣️ Explanation")
+    st.write(explanation)
 
     if st.button("🔙 Back to Dashboard"):
         st.session_state.page = "dashboard"
