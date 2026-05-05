@@ -2,9 +2,19 @@ from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(dotenv_path=".env")
 
-client = MongoClient(os.getenv("MONGO_URI"))
+mongo_uri = os.getenv("mongodb+srv://codelens:codelens224@cluster0.dqzudxu.mongodb.net/codelens")
+print("MONGO URI:", mongo_uri)
+
+client = MongoClient(mongo_uri)
+
+try:
+    client.admin.command('ping')
+    print("✅ MongoDB Connected")
+except Exception as e:
+    print("❌ Mongo Error:", e)
+
 db = client["codelens"]
 
 users = db["users"]
