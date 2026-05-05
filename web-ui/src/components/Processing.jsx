@@ -1,23 +1,46 @@
 import { useEffect, useState } from 'react'
 import { BrainCircuit } from 'lucide-react'
+import axios from 'axios'
 
-export default function Processing({ onComplete }) {
+export default function Processing({ code, user, onComplete, onBack }) {
   const [progress, setProgress] = useState(0)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     const timer = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(timer)
-          setTimeout(onComplete, 500)
-          return 100
+        if (prev >= 90) {
+          return 90
         }
-        return prev + 1
+        return prev + 5
       })
-    }, 30) // simulate ~3 seconds of processing
+    }, 150)
+
+    axios.post('http://localhost:8000/analyze', {
+      code: code,
+      username: user || "guest"
+    })
+    .then(response => {
+      setProgress(100)
+      setTimeout(() => onComplete(response.data), 500)
+    })
+    .catch(err => {
+      clearInterval(timer)
+      setError("Failed to analyze code. Please check the backend.")
+    })
 
     return () => clearInterval(timer)
-  }, [onComplete])
+  }, [code, user, onComplete])
+
+  if (error) {
+    return (
+      <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, minHeight: '60vh' }}>
+        <h2 style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '1rem', color: 'var(--accent-red)' }}>Error</h2>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '2.5rem' }}>{error}</p>
+        <button className="btn-secondary" onClick={onBack}>Go Back</button>
+      </div>
+    )
+  }
 
   return (
     <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, minHeight: '60vh' }}>

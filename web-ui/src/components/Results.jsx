@@ -1,29 +1,18 @@
 import { ArrowLeft, Brain, Bug, CheckCircle, Lightbulb, MessageSquare, Repeat } from 'lucide-react'
 
-export default function Results({ code, onBack }) {
+export default function Results({ code, result, onBack }) {
   
-  // Fake backend logic to generate demo results
-  let score = 95
-  let bugs = []
-  
-  if (code.includes('/ 0') || code.includes('b = 0')) {
-    score -= 30
-    bugs.push("Division by zero error detected")
-  }
-  if (code.includes('for') && !code.includes('range')) {
-    score -= 10
-    bugs.push("Possible inefficient loop iteration")
-  }
-  if (code.includes('==')) {
-    score -= 5
-    bugs.push("Potential type coercion or comparison issue")
-  }
-  if (code.includes('input(')) {
-    score -= 5
-    bugs.push("No input validation on user input")
+  if (!result) {
+    return (
+      <div className="container" style={{ padding: '2rem 0', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <p>No results available. Please try analyzing again.</p>
+        <button className="btn-secondary" onClick={onBack}>Go Back</button>
+      </div>
+    )
   }
 
-  const hasBugs = bugs.length > 0
+  const { score, bugs, intent, suggestions, alternatives, explanation } = result
+  const hasBugs = bugs && bugs.length > 0
   const color = score > 80 ? 'var(--accent-green)' : (score > 60 ? '#f5a623' : 'var(--accent-red)')
 
   return (
@@ -74,7 +63,7 @@ export default function Results({ code, onBack }) {
             </div>
             <div style={{ background: 'rgba(0, 242, 254, 0.05)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid var(--neon-blue)' }}>
               <p style={{ color: 'var(--text-main)', lineHeight: '1.6' }}>
-                The code appears to perform operations based on conditional user logic. It initializes variables, loops through a sequence, and attempts to produce an output state based on comparisons.
+                {intent || "No intent extracted."}
               </p>
             </div>
           </div>
@@ -108,7 +97,7 @@ export default function Results({ code, onBack }) {
                 <h3 style={{ fontSize: '1.1rem' }}>Suggestions</h3>
               </div>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6' }}>
-                {hasBugs ? "Add explicit try-catch blocks and validate input data types before performing operations." : "Consider adding docstrings to make the intent explicit for future maintainers."}
+                {suggestions && suggestions.map((s, i) => <span key={i}>{s}<br/></span>)}
               </p>
             </div>
             
@@ -118,7 +107,7 @@ export default function Results({ code, onBack }) {
                 <h3 style={{ fontSize: '1.1rem' }}>Alternatives</h3>
               </div>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6' }}>
-                Rewrite the iteration logic using higher-order array methods (like <code>.map()</code> or <code>.reduce()</code>) for better readability and performance.
+                {alternatives && alternatives.map((a, i) => <span key={i}>{a}<br/></span>)}
               </p>
             </div>
           </div>
@@ -129,7 +118,7 @@ export default function Results({ code, onBack }) {
               <h3 style={{ fontSize: '1.1rem' }}>Simple Explanation</h3>
             </div>
             <p style={{ color: 'var(--text-muted)', lineHeight: '1.6' }}>
-              This snippet takes in data, checks conditions, and produces an output. However, it currently lacks safeguards against invalid inputs which could cause it to crash unpredictably.
+              {explanation || "No explanation provided."}
             </p>
           </div>
 

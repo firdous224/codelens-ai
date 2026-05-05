@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { LogIn } from 'lucide-react'
+import { UserPlus } from 'lucide-react'
 import axios from 'axios'
 
-export default function Login({ onLogin, onNavigateToSignUp }) {
+export default function SignUp({ onSignUp, onNavigateToLogin }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -14,24 +14,19 @@ export default function Login({ onLogin, onNavigateToSignUp }) {
       setLoading(true)
       setError(null)
       try {
-        console.log("Sending POST /login with:", { username: username.trim(), password })
-        const response = await axios.post('http://localhost:8000/login', {
+        console.log("Sending POST /signup with:", { username: username.trim(), password })
+        const response = await axios.post('http://localhost:8000/signup', {
           username: username.trim(),
           password: password
         })
-        console.log("Login success response:", response.data)
-        
-        if (response.data.status === "success") {
-            onLogin(response.data.username)
-        } else {
-            setError(response.data.message || 'Login failed.')
-        }
+        console.log("Signup success response:", response.data)
+        onSignUp(response.data.username)
       } catch (err) {
-        console.error("Login error:", err)
+        console.error("Signup error:", err)
         if (err.response && err.response.data && err.response.data.detail) {
           setError(err.response.data.detail)
         } else {
-          setError('Login failed. Please check your connection and try again.')
+          setError('Sign up failed. Please check your connection and try again.')
         }
       } finally {
         setLoading(false)
@@ -44,10 +39,10 @@ export default function Login({ onLogin, onNavigateToSignUp }) {
       <div className="card" style={{ width: '100%', maxWidth: '400px', padding: '3rem 2rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(0, 242, 254, 0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
-            <LogIn size={28} color="var(--neon-blue)" />
+            <UserPlus size={28} color="var(--neon-cyan)" />
           </div>
-          <h2 style={{ fontSize: '1.75rem', fontWeight: '700' }}>Welcome Back</h2>
-          <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem' }}>Enter your details to access your workspace.</p>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: '700' }}>Create an Account</h2>
+          <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem' }}>Join CodeLens AI to analyze your code.</p>
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -78,12 +73,12 @@ export default function Login({ onLogin, onNavigateToSignUp }) {
           {error && <p style={{ color: 'var(--accent-red)', fontSize: '0.875rem', textAlign: 'center' }}>{error}</p>}
 
           <button type="submit" className="btn-primary" style={{ marginTop: '1rem', width: '100%', opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }} disabled={loading}>
-            {loading ? 'Signing In...' : 'Sign In'}
+            {loading ? 'Creating Account...' : 'Sign Up'}
           </button>
         </form>
         
         <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '2rem' }}>
-          Don't have an account? <span style={{ color: 'var(--neon-cyan)', cursor: 'pointer' }} onClick={onNavigateToSignUp}>Sign up</span>
+          Already have an account? <span style={{ color: 'var(--neon-blue)', cursor: 'pointer' }} onClick={onNavigateToLogin}>Sign in</span>
         </p>
       </div>
     </div>
