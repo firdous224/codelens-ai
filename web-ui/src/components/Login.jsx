@@ -129,7 +129,7 @@ export default function Login({ onLogin, onNavigateToSignUp }) {
 
             <input
               type="text"
-              placeholder="e.g. dev_ninja"
+              placeholder="Enter your username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -153,7 +153,7 @@ export default function Login({ onLogin, onNavigateToSignUp }) {
 
             <input
               type="password"
-              placeholder="••••••••"
+              placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

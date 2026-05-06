@@ -1,4 +1,4 @@
-import { FileCode2, Upload, Play } from 'lucide-react'
+import { Play, Terminal, Info } from 'lucide-react'
 
 export default function Dashboard({ user, onAnalyze, code, setCode }) {
   const handleAnalyzeClick = () => {
@@ -32,64 +32,94 @@ export default function Dashboard({ user, onAnalyze, code, setCode }) {
   const detectedLang = detectLanguage(code);
 
   return (
-    <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem' }}>
-        <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: '700' }}>Code Analyzer</h1>
-          <p style={{ color: 'var(--text-muted)' }}>
-            Paste your code or upload a file to analyze intent and find bugs.
-          </p>
-        </div>
-        {detectedLang && code?.trim() && (
-          <div style={{ 
-            padding: '0.4rem 0.8rem', 
-            background: 'rgba(0, 242, 254, 0.1)', 
-            border: '1px solid var(--neon-blue)', 
-            borderRadius: '20px', 
-            color: 'var(--neon-blue)',
-            fontSize: '0.8rem',
-            fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-          }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--neon-blue)', boxShadow: '0 0 5px var(--neon-blue)' }}></div>
-            Detected: {detectedLang}
-          </div>
-        )}
+    <div className="animate-fade-in" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: '800', marginBottom: '0.5rem' }}>Neural Analyzer</h1>
+        <p style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Info size={16} /> Paste your source code below to extract logical intent and find vulnerabilities.
+        </p>
       </div>
 
-      {/* Code Input */}
-      <div className="card" style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1rem' }}>
+      <div className="card" style={{ 
+        flex: 1, 
+        display: 'flex', 
+        flexDirection: 'column', 
+        padding: '0', 
+        overflow: 'hidden',
+        background: '#0b0f1a',
+        border: '1px solid var(--glass-border)',
+        boxShadow: '0 4px 30px rgba(0,0,0,0.4)'
+      }}>
+        {/* Editor Header */}
+        <div style={{ 
+          padding: '1rem 1.5rem', 
+          background: 'rgba(255,255,255,0.02)', 
+          borderBottom: '1px solid var(--glass-border)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Terminal size={14} /> main.script
+            </div>
+          </div>
 
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1rem' }}>
-          <button className="btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', border: '1px solid var(--neon-cyan)', color: 'var(--neon-cyan)' }}>
-            <FileCode2 size={16} /> Paste Code
-          </button>
-          <button className="btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>
-            <Upload size={16} /> Upload File
-          </button>
+          {detectedLang && code?.trim() && (
+            <div style={{ 
+              padding: '0.3rem 0.8rem', 
+              background: 'rgba(0, 242, 254, 0.1)', 
+              border: '1px solid rgba(0, 242, 254, 0.3)', 
+              borderRadius: '6px', 
+              color: 'var(--neon-blue)',
+              fontSize: '0.75rem',
+              fontWeight: '700',
+              letterSpacing: '0.05em'
+            }}>
+              {detectedLang.toUpperCase()}
+            </div>
+          )}
         </div>
 
+        {/* Editor Content */}
         <textarea
-          style={{ flex: 1, minHeight: '300px', resize: 'none', fontFamily: 'monospace', fontSize: '0.9rem', lineHeight: '1.5', padding: '1rem', background: 'var(--bg-dark)', border: 'none', color: 'var(--text-main)', outline: 'none' }}
-          placeholder="// Paste your code here..."
+          style={{ 
+            flex: 1, 
+            resize: 'none', 
+            fontFamily: '"Fira Code", monospace', 
+            fontSize: '1rem', 
+            lineHeight: '1.7', 
+            padding: '2rem', 
+            background: 'transparent', 
+            border: 'none', 
+            color: 'var(--text-main)', 
+            outline: 'none',
+            caretColor: 'var(--neon-blue)',
+            minHeight: '400px'
+          }}
+          placeholder="// Paste your code here for deep neural analysis..."
           value={code || ''}
           onChange={(e) => setCode(e.target.value)}
         />
       </div>
 
-      {/* Analyze Button */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+      {/* Footer / Analyze Button */}
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
         <button
           className="btn-primary"
           onClick={handleAnalyzeClick}
           disabled={!code?.trim()}
-          style={{ opacity: code?.trim() ? 1 : 0.5, cursor: code?.trim() ? 'pointer' : 'not-allowed' }}
+          style={{ 
+            padding: '1.2rem 4rem', 
+            fontSize: '1.1rem',
+            opacity: code?.trim() ? 1 : 0.5,
+            cursor: code?.trim() ? 'pointer' : 'not-allowed',
+            minWidth: '250px'
+          }}
         >
-          <Play size={18} fill="currentColor" /> Analyze Code
+          <Play size={20} fill="currentColor" /> Start Neural Analysis
         </button>
       </div>
-    </>
+    </div>
   )
 }

@@ -51,7 +51,7 @@ export default function SignUp({ onSignUp, onNavigateToLogin }) {
             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Username</label>
             <input 
               type="text" 
-              placeholder="e.g. dev_ninja" 
+              placeholder="Create a username" 
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -63,7 +63,7 @@ export default function SignUp({ onSignUp, onNavigateToLogin }) {
             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Password</label>
             <input 
               type="password" 
-              placeholder="••••••••" 
+              placeholder="Create a password" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
