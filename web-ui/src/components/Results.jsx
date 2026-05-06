@@ -11,7 +11,7 @@ export default function Results({ code, result, onBack }) {
     )
   }
 
-  const { score, bugs, intent, suggestions, alternatives, explanation } = result
+  const { score, bugs, intent, suggestions, alternatives, explanation, language } = result
   const hasBugs = bugs && bugs.length > 0
   const color = score > 80 ? 'var(--accent-green)' : (score > 60 ? '#f5a623' : 'var(--accent-red)')
 
@@ -49,6 +49,21 @@ export default function Results({ code, result, onBack }) {
               <p style={{ fontWeight: '600', color: color }}>{score > 80 ? 'Excellent' : (score > 60 ? 'Needs Work' : 'Critical Issues')}</p>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '0.25rem' }}>Confidence: 94%</p>
             </div>
+
+            {language && (
+              <div style={{ 
+                marginTop: '1.5rem',
+                padding: '0.4rem 1rem',
+                background: 'rgba(255,255,255,0.05)',
+                borderRadius: '20px',
+                border: '1px solid rgba(255,255,255,0.1)',
+                fontSize: '0.75rem',
+                color: 'var(--text-muted)',
+                fontWeight: '600'
+              }}>
+                Language: <span style={{ color: 'var(--neon-blue)' }}>{language}</span>
+              </div>
+            )}
           </div>
         </div>
 

@@ -171,6 +171,43 @@ input:focus, textarea:focus {
   to { transform: rotate(360deg); }
 }
 
+.spinner {
+  border: 3px solid rgba(0, 242, 254, 0.1);
+  border-top-color: var(--neon-blue);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(5, 8, 15, 0.9);
+  backdrop-filter: blur(8px);
+  display: flex;
+  alignItems: center;
+  justifyContent: center;
+  zIndex: 1000;
+  padding: 2rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Custom Select styling */
+select {
+  cursor: pointer;
+}
+
+select option {
+  background: var(--bg-card);
+  color: var(--text-main);
+  padding: 10px;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
