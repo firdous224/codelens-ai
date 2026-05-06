@@ -4,9 +4,9 @@ export default function Results({ code, result, onBack }) {
   
   if (!result) {
     return (
-      <div className="container" style={{ padding: '2rem 0', flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <p>No results available. Please try analyzing again.</p>
-        <button className="btn-secondary" onClick={onBack}>Go Back</button>
+        <button className="btn-secondary" onClick={onBack} style={{ width: 'fit-content', marginTop: '1rem' }}>Go Back</button>
       </div>
     )
   }
@@ -16,8 +16,7 @@ export default function Results({ code, result, onBack }) {
   const color = score > 80 ? 'var(--accent-green)' : (score > 60 ? '#f5a623' : 'var(--accent-red)')
 
   return (
-    <div className="container" style={{ padding: '2rem 0', flex: 1, display: 'flex', flexDirection: 'column' }}>
-      
+    <>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
         <button className="btn-secondary" onClick={onBack} style={{ padding: '0.5rem', borderRadius: '50%' }}>
           <ArrowLeft size={20} />
@@ -124,6 +123,6 @@ export default function Results({ code, result, onBack }) {
 
         </div>
       </div>
-    </div>
+    </>
   )
 }

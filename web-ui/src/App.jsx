@@ -6,6 +6,9 @@ import Dashboard from './components/Dashboard'
 import Processing from './components/Processing'
 import Results from './components/Results'
 import History from './components/History'
+import SidebarLayout from './components/SidebarLayout'
+import Comparisons from './components/Comparisons'
+import Explanations from './components/Explanations'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home')
@@ -39,6 +42,8 @@ function App() {
     setAnalysisResult(resultData)
     navigateTo('results')
   }
+
+  const isDashboardRoute = ['dashboard', 'results', 'comparisons', 'explanations', 'history'].includes(currentPage)
 
   return (
     <>
@@ -78,19 +83,9 @@ function App() {
         <nav>
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-
-              <button
-                className="btn-secondary"
-                onClick={() => navigateTo('history')}
-                style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
-              >
-                History
-              </button>
-
               <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                 Welcome, {user}
               </span>
-
               <button
                 className="btn-secondary"
                 onClick={handleLogout}
@@ -118,19 +113,22 @@ function App() {
         {currentPage === 'home' && <Hero onGetStarted={() => navigateTo('login')} />}
         {currentPage === 'login' && <Login onLogin={handleLogin} onNavigateToSignUp={() => navigateTo('signup')} />}
         {currentPage === 'signup' && <SignUp onSignUp={handleLogin} onNavigateToLogin={() => navigateTo('login')} />}
-
-        {/* 🔥 FIXED DASHBOARD */}
-        {currentPage === 'dashboard' && (
-          <Dashboard
-            user={user}
-            onAnalyze={handleAnalyze}
-            onNavigate={navigateTo}   // ✅ IMPORTANT FIX
-          />
-        )}
-
         {currentPage === 'processing' && <Processing code={code} user={user} onComplete={handleProcessingComplete} onBack={() => navigateTo('dashboard')} />}
-        {currentPage === 'results' && <Results code={code} result={analysisResult} onBack={() => navigateTo('dashboard')} />}
-        {currentPage === 'history' && <History user={user} />}
+
+        {/* AUTHENTICATED ROUTES WITH SIDEBAR */}
+        {isDashboardRoute && (
+          <SidebarLayout 
+            activeTab={currentPage} 
+            onNavigate={navigateTo} 
+            hasResults={!!analysisResult}
+          >
+            {currentPage === 'dashboard' && <Dashboard user={user} onAnalyze={handleAnalyze} code={code} setCode={setCode} />}
+            {currentPage === 'results' && <Results result={analysisResult} onBack={() => navigateTo('dashboard')} />}
+            {currentPage === 'comparisons' && <Comparisons result={analysisResult} />}
+            {currentPage === 'explanations' && <Explanations result={analysisResult} />}
+            {currentPage === 'history' && <History user={user} />}
+          </SidebarLayout>
+        )}
       </main>
     </>
   )

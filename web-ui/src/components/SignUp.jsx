@@ -14,20 +14,21 @@ export default function SignUp({ onSignUp, onNavigateToLogin }) {
       setLoading(true)
       setError(null)
       try {
-        console.log("Sending POST /signup with:", { username: username.trim(), password })
-        const response = await axios.post('http://localhost:8000/signup', {
+        console.log("Sending POST /register with:", { username: username.trim(), password })
+        const response = await axios.post('http://localhost:8000/register', {
           username: username.trim(),
           password: password
         })
-        console.log("Signup success response:", response.data)
-        onSignUp(response.data.username)
+        console.log("Register response:", response.data)
+        
+        if (response.data.status === "success") {
+          onSignUp(response.data.username)
+        } else {
+          setError(response.data.message || 'Registration failed')
+        }
       } catch (err) {
         console.error("Signup error:", err)
-        if (err.response && err.response.data && err.response.data.detail) {
-          setError(err.response.data.detail)
-        } else {
-          setError('Sign up failed. Please check your connection and try again.')
-        }
+        setError('Sign up failed. Please check your connection and try again.')
       } finally {
         setLoading(false)
       }
